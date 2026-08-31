@@ -2,7 +2,6 @@ package org.example.realworldapi.application.web.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
 @Setter
 @NoArgsConstructor
 @JsonRootName("article")
-@RegisterForReflection
 public class ArticleResponse {
 
   private String slug;

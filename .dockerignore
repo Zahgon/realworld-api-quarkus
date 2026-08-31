@@ -1,4 +1,3 @@
 *
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
+!target/realworld-api-spring
+!target/realworld-api-spring.jar

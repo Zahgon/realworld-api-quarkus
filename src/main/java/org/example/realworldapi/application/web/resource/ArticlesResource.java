@@ -2,21 +2,17 @@ package org.example.realworldapi.application.web.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.example.realworldapi.application.web.model.request.NewArticleRequest;
 import org.example.realworldapi.application.web.model.request.NewCommentRequest;
 import org.example.realworldapi.application.web.model.request.UpdateArticleRequest;
+import org.example.realworldapi.application.web.model.response.ArticleResponse;
+import org.example.realworldapi.application.web.model.response.CommentResponse;
 import org.example.realworldapi.application.web.resource.utils.ResourceUtils;
 import org.example.realworldapi.domain.feature.*;
 import org.example.realworldapi.domain.model.article.ArticleFilter;
@@ -24,9 +20,26 @@ import org.example.realworldapi.domain.model.comment.DeleteCommentInput;
 import org.example.realworldapi.domain.model.constants.ValidationMessages;
 import org.example.realworldapi.infrastructure.web.qualifiers.NoWrapRootValueObjectMapper;
 import org.example.realworldapi.infrastructure.web.security.annotation.Secured;
+import org.example.realworldapi.infrastructure.web.security.context.SecurityContext;
 import org.example.realworldapi.infrastructure.web.security.profile.Role;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/articles")
+@RestController
+@RequestMapping("/articles")
+@Validated
 @AllArgsConstructor
 public class ArticlesResource {
 
@@ -44,185 +57,167 @@ public class ArticlesResource {
   @NoWrapRootValueObjectMapper ObjectMapper objectMapper;
   private final ResourceUtils resourceUtils;
 
-  @GET
-  @Path("/feed")
+  @GetMapping(path = "/feed", produces = MediaType.APPLICATION_JSON_VALUE)
   @Secured({Role.USER, Role.ADMIN})
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response feed(
-      @QueryParam("offset") int offset,
-      @QueryParam("limit") int limit,
-      @Context SecurityContext securityContext)
+  public ResponseEntity<String> feed(
+      @RequestParam(name = "offset", defaultValue = "0") int offset,
+      @RequestParam(name = "limit", defaultValue = "0") int limit,
+      SecurityContext securityContext)
       throws JsonProcessingException {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var articlesFilter =
         new ArticleFilter(offset, resourceUtils.getLimit(limit), loggedUserId, null, null, null);
     final var articlesPageResult = findMostRecentArticlesByFilter.handle(articlesFilter);
-    return Response.ok(
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(
             objectMapper.writeValueAsString(
-                resourceUtils.articlesResponse(articlesPageResult, loggedUserId)))
-        .status(Response.Status.OK)
-        .build();
+                resourceUtils.articlesResponse(articlesPageResult, loggedUserId)));
   }
 
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   @Secured(optional = true)
-  public Response getArticles(
-      @QueryParam("offset") int offset,
-      @QueryParam("limit") int limit,
-      @QueryParam("tag") List<String> tags,
-      @QueryParam("author") List<String> authors,
-      @QueryParam("favorited") List<String> favorited,
-      @Context SecurityContext securityContext)
+  public ResponseEntity<String> getArticles(
+      @RequestParam(name = "offset", defaultValue = "0") int offset,
+      @RequestParam(name = "limit", defaultValue = "0") int limit,
+      @RequestParam(name = "tag", required = false) List<String> tags,
+      @RequestParam(name = "author", required = false) List<String> authors,
+      @RequestParam(name = "favorited", required = false) List<String> favorited,
+      SecurityContext securityContext)
       throws JsonProcessingException {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var filter =
         new ArticleFilter(
             offset, resourceUtils.getLimit(limit), loggedUserId, tags, authors, favorited);
     final var articlesPageResult = findArticlesByFilter.handle(filter);
-    return Response.ok(
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(
             objectMapper.writeValueAsString(
-                resourceUtils.articlesResponse(articlesPageResult, loggedUserId)))
-        .status(Response.Status.OK)
-        .build();
+                resourceUtils.articlesResponse(articlesPageResult, loggedUserId)));
   }
 
-  @POST
+  @PostMapping(
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
   @Secured({Role.ADMIN, Role.USER})
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response create(
-      @Valid @NotNull(message = ValidationMessages.REQUEST_BODY_MUST_BE_NOT_NULL)
+  public ResponseEntity<ArticleResponse> create(
+      @RequestBody @Valid @NotNull(message = ValidationMessages.REQUEST_BODY_MUST_BE_NOT_NULL)
           NewArticleRequest newArticleRequest,
-      @Context SecurityContext securityContext) {
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var article = createArticle.handle(newArticleRequest.toNewArticleInput(loggedUserId));
-    return Response.ok(resourceUtils.articleResponse(article, loggedUserId))
-        .status(Response.Status.CREATED)
-        .build();
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(resourceUtils.articleResponse(article, loggedUserId));
   }
 
-  @GET
-  @Path("/{slug}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response findBySlug(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+  @GetMapping(path = "/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ArticleResponse> findBySlug(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
           String slug) {
     final var article = findArticleBySlug.handle(slug);
-    return Response.ok(resourceUtils.articleResponse(article, null))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK).body(resourceUtils.articleResponse(article, null));
   }
 
-  @PUT
+  @PutMapping(
+      path = "/{slug}",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}")
   @Secured({Role.ADMIN, Role.USER})
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response update(
-      @PathParam("slug") @NotBlank String slug,
-      @Valid @NotNull UpdateArticleRequest updateArticleRequest,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<ArticleResponse> update(
+      @PathVariable("slug") @NotBlank String slug,
+      @RequestBody @Valid @NotNull UpdateArticleRequest updateArticleRequest,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var updatedArticle =
         updateArticleBySlug.handle(updateArticleRequest.toUpdateArticleInput(loggedUserId, slug));
-    return Response.ok(resourceUtils.articleResponse(updatedArticle, null))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.articleResponse(updatedArticle, null));
   }
 
-  @DELETE
+  @DeleteMapping(path = "/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}")
   @Secured({Role.ADMIN, Role.USER})
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response delete(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<Void> delete(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     deleteArticleBySlug.handle(loggedUserId, slug);
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
-  @GET
-  @Path("/{slug}/comments")
+  @GetMapping(path = "/{slug}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
   @Secured(optional = true)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getCommentsBySlug(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @Context SecurityContext securityContext)
+  public ResponseEntity<String> getCommentsBySlug(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      SecurityContext securityContext)
       throws JsonProcessingException {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var comments = findCommentsByArticleSlug.handle(slug);
-    return Response.ok(
-            objectMapper.writeValueAsString(resourceUtils.commentsResponse(comments, loggedUserId)))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(
+            objectMapper.writeValueAsString(
+                resourceUtils.commentsResponse(comments, loggedUserId)));
   }
 
-  @POST
+  @PostMapping(
+      path = "/{slug}/comments",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}/comments")
   @Secured({Role.ADMIN, Role.USER})
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response createComment(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @Valid NewCommentRequest newCommentRequest,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<CommentResponse> createComment(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      @RequestBody @Valid NewCommentRequest newCommentRequest,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var comment =
         createComment.handle(newCommentRequest.toNewCommentInput(loggedUserId, slug));
-    return Response.ok(resourceUtils.commentResponse(comment, loggedUserId))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.commentResponse(comment, loggedUserId));
   }
 
-  @DELETE
+  @DeleteMapping(path = "/{slug}/comments/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}/comments/{id}")
   @Secured({Role.ADMIN, Role.USER})
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response deleteComment(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @PathParam("id") @NotNull(message = ValidationMessages.COMMENT_ID_MUST_BE_NOT_NULL) UUID id,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<Void> deleteComment(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      @PathVariable("id") @NotNull(message = ValidationMessages.COMMENT_ID_MUST_BE_NOT_NULL) UUID id,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     deleteComment.handle(new DeleteCommentInput(id, loggedUserId, slug));
-    return Response.ok().build();
+    return ResponseEntity.ok().build();
   }
 
-  @POST
+  @PostMapping(path = "/{slug}/favorite", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}/favorite")
   @Secured({Role.ADMIN, Role.USER})
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response favoriteArticle(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<ArticleResponse> favoriteArticle(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     favoriteArticle.handle(slug, loggedUserId);
     final var article = findArticleBySlug.handle(slug);
-    return Response.ok(resourceUtils.articleResponse(article, loggedUserId))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.articleResponse(article, loggedUserId));
   }
 
-  @DELETE
+  @DeleteMapping(path = "/{slug}/favorite", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
-  @Path("/{slug}/favorite")
   @Secured({Role.ADMIN, Role.USER})
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response unfavoriteArticle(
-      @PathParam("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK) String slug,
-      @Context SecurityContext securityContext) {
+  public ResponseEntity<ArticleResponse> unfavoriteArticle(
+      @PathVariable("slug") @NotBlank(message = ValidationMessages.SLUG_MUST_BE_NOT_BLANK)
+          String slug,
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     unfavoriteArticle.handle(slug, loggedUserId);
     final var article = findArticleBySlug.handle(slug);
-    return Response.ok(resourceUtils.articleResponse(article, loggedUserId))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.articleResponse(article, loggedUserId));
   }
 }

@@ -1,10 +1,10 @@
 package org.example.realworldapi.infrastructure.provider;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import org.springframework.stereotype.Component;
 import org.example.realworldapi.domain.model.provider.HashProvider;
 import org.mindrot.jbcrypt.BCrypt;
 
-@ApplicationScoped
+@Component
 public class BCryptHashProvider implements HashProvider {
 
   @Override

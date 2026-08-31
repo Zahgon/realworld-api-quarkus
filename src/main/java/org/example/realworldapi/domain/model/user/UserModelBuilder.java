@@ -1,11 +1,9 @@
 package org.example.realworldapi.domain.model.user;
 
-import jakarta.inject.Named;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.example.realworldapi.domain.validator.ModelValidator;
 
-@Named
 @AllArgsConstructor
 public class UserModelBuilder {
   private final ModelValidator modelValidator;

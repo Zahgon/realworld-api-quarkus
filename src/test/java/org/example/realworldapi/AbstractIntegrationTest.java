@@ -1,8 +1,8 @@
 package org.example.realworldapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.RestAssured;
 import com.github.slugify.Slugify;
-import jakarta.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -10,12 +10,22 @@ import org.example.realworldapi.infrastructure.repository.hibernate.entity.*;
 import org.example.realworldapi.infrastructure.web.provider.TokenProvider;
 import org.example.realworldapi.util.UserEntityUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 public class AbstractIntegrationTest extends DatabaseIntegrationTest {
 
-  @Inject protected ObjectMapper objectMapper;
-  @Inject protected TokenProvider tokenProvider;
-  @Inject protected Slugify slugify;
+  @Autowired protected ObjectMapper objectMapper;
+  @Autowired protected TokenProvider tokenProvider;
+  @Autowired protected Slugify slugify;
+
+  @LocalServerPort protected int port;
+
+  @BeforeEach
+  public void beforeEach() {
+    RestAssured.port = port;
+  }
 
   @AfterEach
   public void afterEach() {

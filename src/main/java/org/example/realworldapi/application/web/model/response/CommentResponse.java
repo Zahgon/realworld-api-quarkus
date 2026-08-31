@@ -2,7 +2,6 @@ package org.example.realworldapi.application.web.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +14,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @JsonRootName("comment")
-@RegisterForReflection
 public class CommentResponse {
 
   private UUID id;

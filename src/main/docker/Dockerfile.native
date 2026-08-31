@@ -1,22 +1,24 @@
 ####
-# This Dockerfile is used in order to build a container that runs the Quarkus application in native (no JVM) mode
+# This Dockerfile is used in order to build a container that runs the Spring Boot application in native (no JVM) mode
 #
 # Before building the docker image run:
 #
-# mvn package -Pnative -Dnative-image.docker-build=true
+# mvn package -Pnative -DskipTests
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t quarkus/realworldapiservice .
+# docker build -f src/main/docker/Dockerfile.native -t spring/realworldapiservice .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/realworldapiservice
+# docker run -i --rm -p 8080:8080 spring/realworldapiservice
 #
 ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+# UBI 9 (glibc 2.34) is required: the GraalVM distribution used by the Spring Boot
+# native profile links against GLIBC_2.32/2.34, which UBI 8 (glibc 2.28) does not provide.
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 WORKDIR /work/
-COPY target/*-runner /work/application
+COPY target/realworld-api-spring /work/application
 RUN chmod 775 /work
 EXPOSE 8080
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
+CMD ["./application"]

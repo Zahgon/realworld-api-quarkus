@@ -1,7 +1,6 @@
 package org.example.realworldapi.application.web.model.response;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.realworldapi.domain.model.user.User;
@@ -9,7 +8,6 @@ import org.example.realworldapi.domain.model.user.User;
 @Getter
 @Setter
 @JsonRootName("profile")
-@RegisterForReflection
 public class ProfileResponse {
 
   private String username;

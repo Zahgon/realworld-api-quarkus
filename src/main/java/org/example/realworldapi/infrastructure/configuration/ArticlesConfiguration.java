@@ -1,8 +1,5 @@
 package org.example.realworldapi.infrastructure.configuration;
 
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
 import org.example.realworldapi.domain.feature.*;
 import org.example.realworldapi.domain.feature.impl.*;
 import org.example.realworldapi.domain.model.article.ArticleModelBuilder;
@@ -11,12 +8,13 @@ import org.example.realworldapi.domain.model.article.FavoriteRelationshipReposit
 import org.example.realworldapi.domain.model.article.TagRelationshipRepository;
 import org.example.realworldapi.domain.model.provider.SlugProvider;
 import org.example.realworldapi.domain.validator.ModelValidator;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Dependent
+@Configuration
 public class ArticlesConfiguration {
 
-  @Produces
-  @Singleton
+  @Bean
   public CreateArticle createArticle(
       FindUserById findUserById,
       ArticleRepository articleRepository,
@@ -33,8 +31,7 @@ public class ArticlesConfiguration {
         tagRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public UpdateArticleBySlug updateArticleBySlug(
       FindArticleBySlug findArticleBySlug,
       CreateSlugByTitle createSlugByTitle,
@@ -44,75 +41,64 @@ public class ArticlesConfiguration {
         findArticleBySlug, createSlugByTitle, articleRepository, modelValidator);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public DeleteArticleBySlug deleteArticleBySlug(
       FindArticleByAuthorAndSlug findArticleByAuthorAndSlug, ArticleRepository articleRepository) {
     return new DeleteArticleBySlugImpl(findArticleByAuthorAndSlug, articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindArticleById findArticleById(ArticleRepository articleRepository) {
     return new FindArticleByIdImpl(articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindArticleByAuthorAndSlug findArticleByAuthorAndSlug(
       ArticleRepository articleRepository) {
     return new FindArticleByAuthorAndSlugImpl(articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindArticleBySlug findArticleBySlug(ArticleRepository articleRepository) {
     return new FindArticleBySlugImpl(articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindArticleTags findArticleTags(TagRelationshipRepository tagRelationshipRepository) {
     return new FindArticleTagsImpl(tagRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindMostRecentArticlesByFilter findMostRecentArticlesByFilter(
       ArticleRepository articleRepository) {
     return new FindMostRecentArticlesByFilterImpl(articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindArticlesByFilter findArticlesByFilter(ArticleRepository articleRepository) {
     return new FindArticlesByFilterImpl(articleRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public IsArticleFavorited isArticleFavorited(
       FavoriteRelationshipRepository favoriteRelationshipRepository) {
     return new IsArticleFavoritedImpl(favoriteRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public ArticleFavoritesCount articleFavoritesCount(
       FindArticleById findArticleById,
       FavoriteRelationshipRepository favoriteRelationshipRepository) {
     return new ArticleFavoritesCountImpl(findArticleById, favoriteRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public CreateSlugByTitle createSlugByTitle(
       ArticleRepository articleRepository, SlugProvider slugProvider) {
     return new CreateSlugByTitleImpl(articleRepository, slugProvider);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FavoriteArticle favoriteArticle(
       FindArticleBySlug findArticleBySlug,
       FindUserById findUserById,
@@ -120,16 +106,14 @@ public class ArticlesConfiguration {
     return new FavoriteArticleImpl(findArticleBySlug, findUserById, favoriteRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public UnfavoriteArticle unfavoriteArticle(
       FindArticleBySlug findArticleBySlug,
       FavoriteRelationshipRepository favoriteRelationshipRepository) {
     return new UnfavoriteArticleImpl(findArticleBySlug, favoriteRelationshipRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public ArticleModelBuilder articleBuilder(ModelValidator modelValidator) {
     return new ArticleModelBuilder(modelValidator);
   }

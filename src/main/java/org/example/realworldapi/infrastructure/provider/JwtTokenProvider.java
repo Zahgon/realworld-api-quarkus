@@ -6,15 +6,15 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import jakarta.enterprise.context.ApplicationScoped;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.example.realworldapi.infrastructure.web.provider.TokenProvider;
 import org.example.realworldapi.infrastructure.web.security.profile.Role;
 
-@ApplicationScoped
+@Component
 public class JwtTokenProvider implements TokenProvider {
 
   public final String COMPLEMENTARY_SUBSCRIPTION = "complementary-subscription";
@@ -25,9 +25,9 @@ public class JwtTokenProvider implements TokenProvider {
   private Integer expirationTimeInMinutes;
 
   public JwtTokenProvider(
-      @ConfigProperty(name = "jwt.issuer") String issuer,
-      @ConfigProperty(name = "jwt.secret") String secret,
-      @ConfigProperty(name = "jwt.expiration.time.minutes") Integer expirationTimeInMinutes) {
+      @Value("${jwt.issuer}") String issuer,
+      @Value("${jwt.secret}") String secret,
+      @Value("${jwt.expiration.time.minutes}") Integer expirationTimeInMinutes) {
 
     this.issuer = issuer;
     this.algorithm = Algorithm.HMAC512(secret);

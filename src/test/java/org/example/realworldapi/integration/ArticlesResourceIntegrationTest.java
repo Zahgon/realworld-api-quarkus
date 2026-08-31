@@ -6,8 +6,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import java.util.Arrays;
 import org.apache.http.HttpStatus;
 import org.example.realworldapi.AbstractIntegrationTest;
@@ -17,7 +17,7 @@ import org.example.realworldapi.application.web.model.request.UpdateArticleReque
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
 
   private final String ARTICLES_PATH = API_PREFIX + "/articles";
@@ -27,7 +27,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
   public void shouldReturn401WhenExecuteFeedEndpointWithoutAuthorization() {
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .queryParam("offset", 0)
         .queryParam("limit", 5)
         .get(FEED_PATH)
@@ -61,7 +61,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     follow(loggedUser, follower1);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .queryParam("offset", 0)
         .queryParam("limit", 5)
@@ -114,7 +114,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     follow(loggedUser, follower1);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .queryParam("offset", 0)
         .queryParam("limit", 10)
@@ -167,7 +167,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     follow(loggedUser, user);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .queryParam("offset", 0)
         .queryParam("limit", 10)
@@ -220,7 +220,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     follow(loggedUser, user);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .queryParam("offset", 0)
         .queryParam("limit", 10)
@@ -272,7 +272,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     createArticlesTags(articlesLoggedUser, tag2);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .queryParam("offset", 0)
         .queryParam("limit", 10)
         .queryParam("tag", tag1.getName())
@@ -308,7 +308,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
   public void shouldReturn401WhenExecuteCreateArticleEndpointWithoutToken() {
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .post(ARTICLES_PATH)
         .then()
         .statusCode(HttpStatus.SC_UNAUTHORIZED);
@@ -325,7 +325,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     NewArticleRequest newArticleRequest = createNewArticle("Title", "Description", "Body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .body(objectMapper.writeValueAsString(newArticleRequest))
         .post(ARTICLES_PATH)
@@ -374,7 +374,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
             "Title 1", "Description", "Body", tag1.getName(), tag2.getName(), tag3, tag4);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .body(objectMapper.writeValueAsString(newArticleRequest))
         .post(ARTICLES_PATH)
@@ -414,7 +414,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     final var article = createArticleEntity(loggedUser, "Title", "Description", "Body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .get(ARTICLES_PATH + "/{slug}")
@@ -443,7 +443,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     updateArticleRequest.setBody("updated body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .body(objectMapper.writeValueAsString(updateArticleRequest))
         .pathParam("slug", article.getSlug())
@@ -473,7 +473,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     final var article = createArticleEntity(loggedUser, "Title", "Description", "Body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .delete(ARTICLES_PATH + "/{slug}")
@@ -495,7 +495,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     createComment(loggedUser, article, "comment2");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .pathParam("slug", article.getSlug())
         .get(ARTICLES_PATH + "/{slug}/comments")
         .then()
@@ -528,7 +528,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     newCommentRequest.setBody("comment body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .body(objectMapper.writeValueAsString(newCommentRequest))
@@ -565,7 +565,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     createComment(loggedUser, article, "comment 2 body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .pathParam("id", comment1.getId())
@@ -588,7 +588,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     final var article = createArticleEntity(user, "Title", "Description", "Body");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .post(ARTICLES_PATH + "/{slug}/favorite")
@@ -633,7 +633,7 @@ public class ArticlesResourceIntegrationTest extends AbstractIntegrationTest {
     favorite(article, loggedUser);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(loggedUser))
         .pathParam("slug", article.getSlug())
         .delete(ARTICLES_PATH + "/{slug}/favorite")

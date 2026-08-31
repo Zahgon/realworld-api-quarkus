@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.apache.http.HttpStatus;
 import org.example.realworldapi.AbstractIntegrationTest;
 import org.example.realworldapi.application.web.model.request.LoginRequest;
@@ -15,7 +15,7 @@ import org.example.realworldapi.application.web.model.request.NewUserRequest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
 
   private final String USERS_RESOURCE_PATH = API_PREFIX + "/users";
@@ -32,7 +32,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     newUser.setPassword("user123");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(newUser))
         .when()
         .post(USERS_RESOURCE_PATH)
@@ -70,7 +70,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     newUser.setPassword("user123");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(newUser))
         .when()
         .post(USERS_RESOURCE_PATH)
@@ -94,7 +94,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     newUser.setPassword("user123");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(newUser))
         .when()
         .post(USERS_RESOURCE_PATH)
@@ -109,7 +109,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     NewUserRequest newUser = new NewUserRequest();
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(newUser))
         .when()
         .post(USERS_RESOURCE_PATH)
@@ -134,7 +134,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     newUser.setPassword("user123");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(newUser))
         .when()
         .post(USERS_RESOURCE_PATH)
@@ -154,7 +154,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     LoginRequest loginRequest = new LoginRequest();
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(loginRequest))
         .when()
         .post(LOGIN_PATH)
@@ -176,7 +176,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     loginRequest.setPassword(userPassword);
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(loginRequest))
         .when()
         .post(LOGIN_PATH)
@@ -196,7 +196,7 @@ public class UsersResourceIntegrationTest extends AbstractIntegrationTest {
     loginRequest.setPassword("145");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(loginRequest))
         .when()
         .post(LOGIN_PATH)

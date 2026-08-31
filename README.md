@@ -1,32 +1,31 @@
-# ![RealWorld Example App](quarkus-logo.png)
+# RealWorld Example App
 
-> ### Quarkus Framework codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+> ### Spring Boot codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
 
-This codebase was created to demonstrate a fully fledged fullstack application built with [Quarkus](https://quarkus.io/)
+This codebase was created to demonstrate a fully fledged fullstack application built with [Spring Boot](https://spring.io/projects/spring-boot)
 including CRUD operations, authentication, routing, pagination, and more.
 
-We've gone to great lengths to adhere to the Quarkus community styleguides & best practices.
+We've gone to great lengths to adhere to the Spring community styleguides & best practices.
 
 For more information on how to this works with other frontends/backends, head over to
 the [RealWorld](https://github.com/gothinkster/realworld) repo.
 
-[![Java CI with Maven](https://github.com/diegocamara/realworld-api-quarkus/actions/workflows/maven.yml/badge.svg)](https://github.com/diegocamara/realworld-api-quarkus/actions/workflows/maven.yml)
-
 # How it works
 
-This application basically uses Quarkus Framework with Java 25 with some other modules known to development community:
+This application basically uses Spring Boot with Java 25 with some other modules known to development community:
 
+* Spring MVC
+* Spring Data JPA
 * Hibernate
 * Jackson for JSON
 * H2 in memory database
-* JPA Criteria
 * Auth0 java-jwt
 
 ### Project structure:
 
 ```
 application/            -> business orchestration layer
-+-- web/                -> web layer models and resources
++-- web/                -> web layer models and controllers
 domain/                 -> core business implementation layer
 +-- model/              -> core business entity models
 +-- feature/            -> all features logic implementation
@@ -44,7 +43,7 @@ infrastructure/         -> technical details layer
 ### Start local server
 
 ```shell
- ./mvnw compile quarkus:dev
+ ./mvnw spring-boot:run
  ```
 
 The server should be running at http://localhost:8080
@@ -54,6 +53,9 @@ The server should be running at http://localhost:8080
 ```shell
 ./mvnw test 
 ```
+
+Tests also produce a JaCoCo coverage report at `target/site/jacoco/index.html`. The build fails when
+bundle line coverage drops below the threshold configured in `pom.xml`.
 
 ### Running postman collection tests
 
@@ -70,7 +72,7 @@ The server should be running at http://localhost:8080
 ### Building native executable
 
 GraalVM is necessary for building native executable, more information about setting up GraalVM can be found
-in [Quarkus guides](https://quarkus.io/guides/)
+in [Spring Boot native image guides](https://docs.spring.io/spring-boot/reference/packaging/native-image/index.html)
 and database engine need to be changed.
 
 ```shell
@@ -81,11 +83,10 @@ and database engine need to be changed.
 
 ```properties
 # Database configuration
-quarkus.datasource.db-kind=h2
-quarkus.datasource.jdbc.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-quarkus.datasource.jdbc.driver=org.h2.Driver
-quarkus.datasource.username=sa
-quarkus.datasource.password=
+spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
 ```
 
 ## Help

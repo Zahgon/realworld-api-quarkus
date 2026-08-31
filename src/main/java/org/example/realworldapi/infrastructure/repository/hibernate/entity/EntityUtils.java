@@ -1,6 +1,6 @@
 package org.example.realworldapi.infrastructure.repository.hibernate.entity;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 import org.example.realworldapi.domain.model.article.Article;
 import org.example.realworldapi.domain.model.article.ArticleModelBuilder;
@@ -12,7 +12,7 @@ import org.example.realworldapi.domain.model.tag.TagBuilder;
 import org.example.realworldapi.domain.model.user.User;
 import org.example.realworldapi.domain.model.user.UserModelBuilder;
 
-@ApplicationScoped
+@Component
 @AllArgsConstructor
 public class EntityUtils {
   private final UserModelBuilder userBuilder;

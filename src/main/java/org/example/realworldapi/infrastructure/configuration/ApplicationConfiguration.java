@@ -5,22 +5,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.slugify.Slugify;
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
 import org.example.realworldapi.infrastructure.web.qualifiers.NoWrapRootValueObjectMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
+import org.springframework.context.annotation.Primary;
 
-@Dependent
+@Configuration
+@ImportRuntimeHints(NativeRuntimeHints.class)
 public class ApplicationConfiguration {
 
-  @Produces
-  @Singleton
+  @Bean
   public Slugify slugify() {
     return Slugify.builder().build();
   }
 
-  @Singleton
-  @Produces
+  @Bean
+  @Primary
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.WRAP_ROOT_VALUE);
@@ -29,8 +30,7 @@ public class ApplicationConfiguration {
     return objectMapper;
   }
 
-  @Singleton
-  @Produces
+  @Bean
   @NoWrapRootValueObjectMapper
   public ObjectMapper noWrapRootValueObjectMapper() {
     return new ObjectMapper().registerModule(new JavaTimeModule());

@@ -1,8 +1,5 @@
 package org.example.realworldapi.infrastructure.configuration;
 
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Singleton;
 import org.example.realworldapi.domain.feature.*;
 import org.example.realworldapi.domain.feature.impl.CreateCommentImpl;
 import org.example.realworldapi.domain.feature.impl.DeleteCommentImpl;
@@ -11,12 +8,13 @@ import org.example.realworldapi.domain.feature.impl.FindCommentsByArticleSlugImp
 import org.example.realworldapi.domain.model.comment.CommentBuilder;
 import org.example.realworldapi.domain.model.comment.CommentRepository;
 import org.example.realworldapi.domain.validator.ModelValidator;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Dependent
+@Configuration
 public class CommentsConfiguration {
 
-  @Produces
-  @Singleton
+  @Bean
   public CreateComment createComment(
       CommentRepository commentRepository,
       FindUserById findUserById,
@@ -26,28 +24,24 @@ public class CommentsConfiguration {
         commentRepository, findUserById, findArticleBySlug, commentBuilder);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public DeleteComment deleteComment(
       FindCommentByIdAndAuthor findCommentByIdAndAuthor, CommentRepository commentRepository) {
     return new DeleteCommentImpl(findCommentByIdAndAuthor, commentRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindCommentByIdAndAuthor findCommentByIdAndAuthor(CommentRepository commentRepository) {
     return new FindCommentByIdAndAuthorImpl(commentRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public FindCommentsByArticleSlug findCommentsByArticleSlug(
       FindArticleBySlug findArticleBySlug, CommentRepository commentRepository) {
     return new FindCommentsByArticleSlugImpl(findArticleBySlug, commentRepository);
   }
 
-  @Produces
-  @Singleton
+  @Bean
   public CommentBuilder commentBuilder(ModelValidator modelValidator) {
     return new CommentBuilder(modelValidator);
   }

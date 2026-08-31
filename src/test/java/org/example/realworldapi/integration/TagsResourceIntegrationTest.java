@@ -5,13 +5,13 @@ import static org.example.realworldapi.constants.TestConstants.API_PREFIX;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.apache.http.HttpStatus;
 import org.example.realworldapi.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TagsResourceIntegrationTest extends AbstractIntegrationTest {
 
   private final String TAGS_PATH = API_PREFIX + "/tags";
@@ -25,7 +25,7 @@ public class TagsResourceIntegrationTest extends AbstractIntegrationTest {
     final var tag4 = createTagEntity("tag 4");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .get(TAGS_PATH)
         .then()
         .statusCode(HttpStatus.SC_OK)

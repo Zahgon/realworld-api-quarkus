@@ -1,21 +1,30 @@
 package org.example.realworldapi.application.web.resource;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import lombok.AllArgsConstructor;
+import org.example.realworldapi.application.web.model.response.ProfileResponse;
 import org.example.realworldapi.application.web.resource.utils.ResourceUtils;
 import org.example.realworldapi.domain.feature.FollowUserByUsername;
 import org.example.realworldapi.domain.feature.UnfollowUserByUsername;
 import org.example.realworldapi.domain.model.constants.ValidationMessages;
 import org.example.realworldapi.infrastructure.web.security.annotation.Secured;
+import org.example.realworldapi.infrastructure.web.security.context.SecurityContext;
 import org.example.realworldapi.infrastructure.web.security.profile.Role;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Path("/profiles")
+@RestController
+@RequestMapping("/profiles")
+@Validated
 @AllArgsConstructor
 public class ProfilesResource {
 
@@ -23,48 +32,40 @@ public class ProfilesResource {
   private final UnfollowUserByUsername unfollowUserByUsername;
   private final ResourceUtils resourceUtils;
 
-  @GET
+  @GetMapping(path = "/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Secured(optional = true)
-  @Path("/{username}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getProfile(
-      @PathParam("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
+  public ResponseEntity<ProfileResponse> getProfile(
+      @PathVariable("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
           String username,
-      @Context SecurityContext securityContext) {
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     final var profileResponse = resourceUtils.profileResponse(username, loggedUserId);
-    return Response.ok(profileResponse).status(Response.Status.OK).build();
+    return ResponseEntity.status(HttpStatus.OK).body(profileResponse);
   }
 
-  @POST
+  @PostMapping(path = "/{username}/follow", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
   @Secured({Role.USER, Role.ADMIN})
-  @Path("/{username}/follow")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response follow(
-      @PathParam("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
+  public ResponseEntity<ProfileResponse> follow(
+      @PathVariable("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
           String username,
-      @Context SecurityContext securityContext) {
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     followUserByUsername.handle(loggedUserId, username);
-    return Response.ok(resourceUtils.profileResponse(username, loggedUserId))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.profileResponse(username, loggedUserId));
   }
 
-  @DELETE
+  @DeleteMapping(path = "/{username}/follow", produces = MediaType.APPLICATION_JSON_VALUE)
   @Transactional
   @Secured({Role.USER, Role.ADMIN})
-  @Path("/{username}/follow")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response unfollow(
-      @PathParam("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
+  public ResponseEntity<ProfileResponse> unfollow(
+      @PathVariable("username") @NotBlank(message = ValidationMessages.USERNAME_MUST_BE_NOT_BLANK)
           String username,
-      @Context SecurityContext securityContext) {
+      SecurityContext securityContext) {
     final var loggedUserId = resourceUtils.getLoggedUserId(securityContext);
     unfollowUserByUsername.handle(loggedUserId, username);
-    return Response.ok(resourceUtils.profileResponse(username, loggedUserId))
-        .status(Response.Status.OK)
-        .build();
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(resourceUtils.profileResponse(username, loggedUserId));
   }
 }

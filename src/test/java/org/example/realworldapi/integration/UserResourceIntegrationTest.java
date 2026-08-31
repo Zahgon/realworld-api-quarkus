@@ -5,8 +5,8 @@ import static org.example.realworldapi.constants.TestConstants.*;
 import static org.hamcrest.Matchers.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import java.util.UUID;
 import org.apache.http.HttpStatus;
 import org.example.realworldapi.AbstractIntegrationTest;
@@ -15,7 +15,7 @@ import org.example.realworldapi.util.UserEntityUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserResourceIntegrationTest extends AbstractIntegrationTest {
 
   private final String USER_RESOURCE_PATH = API_PREFIX + "/user";
@@ -27,7 +27,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
 
     given()
         .header(AUTHORIZATION_HEADER, AUTHORIZATION_HEADER_VALUE_PREFIX + token(user))
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .get(USER_RESOURCE_PATH)
         .then()
         .statusCode(HttpStatus.SC_OK)
@@ -58,7 +58,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
 
     given()
         .header(AUTHORIZATION_HEADER, authorizationHeader)
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .get(USER_RESOURCE_PATH)
         .then()
         .statusCode(HttpStatus.SC_NOT_FOUND)
@@ -73,7 +73,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     final var user = UserEntityUtils.create("user1", "user1@mail.com", "123");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .body(objectMapper.writeValueAsString(user))
         .get(USER_RESOURCE_PATH)
         .then()
@@ -94,7 +94,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setEmail(user.getEmail());
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -118,6 +118,34 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
   }
 
   @Test
+  public void givenAExistentUser_whenUpdateSendsBlankOptionalFields_shouldKeepTheStoredValues()
+      throws JsonProcessingException {
+
+    // `UpdateUserImpl.isPresent` skips a field that is null OR empty, so a blank
+    // bio or image leaves the stored value alone. Dropping the emptiness half of
+    // that guard writes the blank through, and no other test notices: the
+    // empty-username case is rejected by @NotBlank long before it reaches here.
+    final var user = createUserEntity("user1", "user1@mail.com", "bio", "image", "123");
+
+    String authorizationHeader = AUTHORIZATION_HEADER_VALUE_PREFIX + token(user);
+
+    UpdateUserRequest updateUserRequest = new UpdateUserRequest();
+    updateUserRequest.setUsername(user.getUsername());
+    updateUserRequest.setEmail(user.getEmail());
+    updateUserRequest.setBio("");
+    updateUserRequest.setImage("");
+
+    given()
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .header(AUTHORIZATION_HEADER, authorizationHeader)
+        .body(objectMapper.writeValueAsString(updateUserRequest))
+        .put(USER_RESOURCE_PATH)
+        .then()
+        .statusCode(HttpStatus.SC_OK)
+        .body("user.bio", is(user.getBio()), "user.image", is(user.getImage()));
+  }
+
+  @Test
   public void givenAExistentUser_whenExecuteUpdateUserEndpointWithEmptyBody_shouldReturn422()
       throws JsonProcessingException {
 
@@ -128,7 +156,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     UpdateUserRequest updateUserRequest = new UpdateUserRequest();
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -152,7 +180,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setUsername(otherUser.getUsername());
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -176,7 +204,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setEmail(otherUser.getEmail());
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -197,7 +225,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setUsername("");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -218,7 +246,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setEmail("email");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)
@@ -243,7 +271,7 @@ public class UserResourceIntegrationTest extends AbstractIntegrationTest {
     updateUserRequest.setUsername(" ");
 
     given()
-        .contentType(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
         .header(AUTHORIZATION_HEADER, authorizationHeader)
         .body(objectMapper.writeValueAsString(updateUserRequest))
         .put(USER_RESOURCE_PATH)

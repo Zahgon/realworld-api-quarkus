@@ -1,7 +1,6 @@
 package org.example.realworldapi.application.web.model.request;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +14,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @JsonRootName("article")
 @AtLeastOneFieldMustBeNotNull
-@RegisterForReflection
 public class UpdateArticleRequest {
 
   private String title;

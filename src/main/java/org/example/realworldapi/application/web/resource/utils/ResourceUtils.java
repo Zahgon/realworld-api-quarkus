@@ -1,7 +1,7 @@
 package org.example.realworldapi.application.web.resource.utils;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.core.SecurityContext;
+import org.springframework.stereotype.Component;
+import org.example.realworldapi.infrastructure.web.security.context.SecurityContext;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import org.example.realworldapi.domain.model.article.Article;
 import org.example.realworldapi.domain.model.article.PageResult;
 import org.example.realworldapi.domain.model.comment.Comment;
 
-@ApplicationScoped
+@Component
 @AllArgsConstructor
 public class ResourceUtils {
 

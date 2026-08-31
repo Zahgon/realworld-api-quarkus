@@ -1,11 +1,11 @@
 package org.example.realworldapi.infrastructure.provider;
 
 import com.github.slugify.Slugify;
-import jakarta.enterprise.context.ApplicationScoped;
+import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 import org.example.realworldapi.domain.model.provider.SlugProvider;
 
-@ApplicationScoped
+@Component
 @AllArgsConstructor
 public class SlugifySlugProvider implements SlugProvider {
 
